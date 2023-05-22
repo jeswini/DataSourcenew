@@ -102,42 +102,27 @@
           value: function uploadData(e) {
             var _this2 = this;
 
-            // console.log(e.target.files[0]['name']);
-            console.log(e.target.value);
-            console.log(e.target.result);
-            var fileName = e.target.files[0]['name'];
+            var file = e.target.files[0];
+            var fileName = file.name;
             var fileDetails = {
               filename: fileName,
               fileType: fileName.split('.')[fileName.split('.').length - 1],
-              filePath: "C:\\Users\\ogjes\\Downloads\\" + fileName
-            }; // console.log(fileDetails);
+              filePath: null
+            };
+            var reader = new FileReader();
 
-            if (fileDetails.fileType === 'csv' || fileDetails.fileType === 'xlsx') {
-              /* wire up file reader */
-              // @ts-ignore
-              var target = event.target;
+            reader.onloadend = function (event) {
+              var fileData = event.target.result;
+              fileDetails.filePath = fileData; // Set the file path as the file data
 
-              if (target.files.length !== 1) {
-                throw new Error('Cannot use multiple files');
-              }
-
-              var reader = new FileReader();
-              reader.readAsBinaryString(target.files[0]);
-
-              reader.onload = function (e) {
-                /* create workbook */
-                var binarystr = e.target.result;
+              if (fileDetails.fileType === 'csv' || fileDetails.fileType === 'xlsx') {
+                var binarystr = fileData;
                 var wb = xlsx__WEBPACK_IMPORTED_MODULE_4__["read"](binarystr, {
                   type: 'binary'
                 });
-                /* selected the first sheet */
-
                 var wsname = wb.SheetNames[0];
                 var ws = wb.Sheets[wsname];
-                /* save data */
-
-                var data = xlsx__WEBPACK_IMPORTED_MODULE_4__["utils"].sheet_to_json(ws); // to get 2d array pass 2nd parameter as object {header: 1}
-
+                var data = xlsx__WEBPACK_IMPORTED_MODULE_4__["utils"].sheet_to_json(ws);
                 var uploadedFileData = {
                   fileDetail: fileDetails,
                   data: data,
@@ -151,31 +136,30 @@
                 };
 
                 _this2.http.post('/getData', uploadedFileData).subscribe(function (resp) {
-                  // console.log('Success');
                   _this2.getData('/getData');
                 });
-              };
-            } else if (fileDetails.fileType === 'txt' || fileDetails.fileType === 'sql') {
-              var file = e.target.files[0];
-              var fileReader = new FileReader();
-              var self = this;
+              } else if (fileDetails.fileType === 'txt' || fileDetails.fileType === 'sql') {
+                var fileReader = new FileReader();
+                var self = _this2;
 
-              fileReader.onloadend = function (x) {
-                console.log(fileReader.result);
-                var data = fileReader.result;
-                var uploadedFileData = {
-                  fileDetail: fileDetails,
-                  data: data,
-                  header: []
+                fileReader.onloadend = function (x) {
+                  var data = fileReader.result;
+                  var uploadedFileData = {
+                    fileDetail: fileDetails,
+                    data: data,
+                    header: []
+                  };
+                  self.http.post('/getData', uploadedFileData).subscribe(function (resp) {
+                    console.log('Success');
+                    self.getData('/getData');
+                  });
                 };
-                self.http.post('/getData', uploadedFileData).subscribe(function (resp) {
-                  console.log('Success');
-                  self.getData('/getData');
-                });
-              };
 
-              fileReader.readAsText(file);
-            }
+                fileReader.readAsText(file);
+              }
+            };
+
+            reader.readAsBinaryString(file);
           }
         }, {
           key: "deleteRecord",
@@ -2100,7 +2084,7 @@
       /* harmony default export */
 
 
-      __webpack_exports__["default"] = "<span class=\"cursorPointer\" *ngIf=\"(variable.popupSubTitle === 'spreadsheet' || variable.popupSubTitle === 'database' || variable.popupSubTitle === 'text')\" (click)=\"dataSource.backToList()\"><- Back</span>\n<span class=\"cursorPointer\" *ngIf=\"variable.popupSubTitle === 'merge'\" (click)=\"dataSource.backToAction()\"><- Back</span>\n<div *ngIf=\"!variable.selectedData.header.length || dataSource.isString(variable.selectedData.data)\">\n  {{variable.selectedData.data}}\n</div>\n<table *ngIf=\"variable.selectedData.header.length && !dataSource.isString(variable.selectedData.data) && variable.popupSubTitle !== 'detail'\">\n  <ng-container *ngIf=\"variable.selectedData.data.length\">\n    <tr>\n      <th *ngFor=\"let head of variable.selectedData.header\">{{head.columnHeader}}</th>\n    </tr>\n    <tr *ngFor=\"let data of variable.selectedData.data\">\n      <td *ngFor=\"let head of variable.selectedData.header; let i = index\">{{data[head.columnHeader] ? data[head.columnHeader] : data[i]}}</td>\n    </tr>\n  </ng-container>\n  <tr *ngIf=\"!variable.selectedData.data.length\">\n    <td>No Data Found</td>\n  </tr>\n</table>\n<table *ngIf=\"variable.selectedData.data.length && !dataSource.isString(variable.selectedData.data) && variable.popupSubTitle === 'detail'\">\n  <ng-container *ngIf=\"variable.selectedData.data.length\">\n    <tr>\n      <th *ngFor=\"let head of variable.selectedData.header\">{{head}}</th>\n    </tr>\n    <tr *ngFor=\"let data of variable.selectedData.data\">\n      <td *ngFor=\"let head of variable.selectedData.header; let i = index\">{{data[head] ? data[head] : data[i]}}</td>\n    </tr>\n  </ng-container>\n  <tr *ngIf=\"!variable.selectedData.data.length\">\n    <td>No Data Found</td>\n  </tr>\n</table>\n";
+      __webpack_exports__["default"] = "<!-- to show the data inside the file when we click on the file in the pallette-->\n\n<span class=\"cursorPointer\" *ngIf=\"(variable.popupSubTitle === 'spreadsheet' || variable.popupSubTitle === 'database' || variable.popupSubTitle === 'text')\" (click)=\"dataSource.backToList()\"><- Back</span>\n<span class=\"cursorPointer\" *ngIf=\"variable.popupSubTitle === 'merge'\" (click)=\"dataSource.backToAction()\"><- Back</span>\n<div *ngIf=\"!variable.selectedData.header.length || dataSource.isString(variable.selectedData.data)\">\n  {{variable.selectedData.data}}\n</div>\n<table *ngIf=\"variable.selectedData.header.length && !dataSource.isString(variable.selectedData.data) && variable.popupSubTitle !== 'detail'\">\n  <ng-container *ngIf=\"variable.selectedData.data.length\">\n    <tr>\n      <th *ngFor=\"let head of variable.selectedData.header\">{{head.columnHeader}}</th>\n    </tr>\n    <tr *ngFor=\"let data of variable.selectedData.data\">\n      <td *ngFor=\"let head of variable.selectedData.header; let i = index\">{{data[head.columnHeader] ? data[head.columnHeader] : data[i]}}</td>\n    </tr>\n  </ng-container>\n  <tr *ngIf=\"!variable.selectedData.data.length\">\n    <td>No Data Found</td>\n  </tr>\n</table>\n<table *ngIf=\"variable.selectedData.data.length && !dataSource.isString(variable.selectedData.data) && variable.popupSubTitle === 'detail'\">\n  <ng-container *ngIf=\"variable.selectedData.data.length\">\n    <tr>\n      <th *ngFor=\"let head of variable.selectedData.header\">{{head}}</th>\n    </tr>\n    <tr *ngFor=\"let data of variable.selectedData.data\">\n      <td *ngFor=\"let head of variable.selectedData.header; let i = index\">{{data[head] ? data[head] : data[i]}}</td>\n    </tr>\n  </ng-container>\n  <tr *ngIf=\"!variable.selectedData.data.length\">\n    <td>No Data Found</td>\n  </tr>\n</table>\n";
       /***/
     },
 
@@ -3482,7 +3466,7 @@
       /* harmony default export */
 
 
-      __webpack_exports__["default"] = "<fieldset class=\"mb1\">\n  <legend>INPUT</legend>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"spreadsheet\">\n    <i class=\"fas fa-file-excel\"></i><span> SpreadSheet</span>\n  </div>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"database\">\n    <i class=\"fas fa-server\"></i><span> Database</span>\n  </div>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"text\">\n    <i class=\"fas fa-file-alt\"></i><span> Text File</span>\n  </div>\n</fieldset>\n<fieldset class=\"mb1\">\n  <legend>ACTION</legend>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"merge\">\n    <i class=\"fas fa-network-wired\"></i><span> Merge</span>\n  </div>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"sort\">\n    <i class=\"fas fa-sort\"></i><span> Sort</span>\n  </div>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"projection\">\n    <i class=\"fas fa-sort\"></i><span> Projection</span>\n  </div>\n</fieldset>\n<fieldset class=\"mb1\">\n  <legend>ANALYSIS</legend>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"decision_tree\">\n    <i class=\"fas fa-network-wired\"></i><span> Decision Tree</span>\n  </div>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"regression\">\n    <i class=\"fas fa-sort\"></i><span> Regression</span>\n  </div>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"correlation\">\n    <i class=\"fas fa-sort\"></i><span> Correlation</span>\n  </div>\n</fieldset>\n<fieldset class=\"mb1\">\n  <legend>TRANSFORMATION</legend>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"uppercase\">\n    <span>Uppercase <strong>[TEXT]</strong></span>\n  </div>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"lowercase\">\n    <span>Lowercase <strong>[text]</strong></span>\n  </div>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"encode\">\n    <span>Encode <strong>[Text]</strong></span>\n  </div>\n</fieldset>\n<fieldset class=\"mb1\">\n  <legend>OUTPUT</legend>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"spreadsheetOutput\">\n    <i class=\"fas fa-file-excel\"></i><span> SpreadSheet</span>\n  </div>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"databaseOutput\">\n    <i class=\"fas fa-server\"></i><span> Database</span>\n  </div>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"textOutput\">\n    <i class=\"fas fa-file-alt\"></i><span> Text File</span>\n  </div>\n</fieldset>\n";
+      __webpack_exports__["default"] = "<!-- to display all the items inside the pallette -->\n\n<fieldset class=\"mb1\">\n  <legend>INPUT</legend>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"spreadsheet\">\n    <i class=\"fas fa-file-excel\"></i><span> SpreadSheet</span>\n  </div>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"database\">\n    <i class=\"fas fa-server\"></i><span> Database</span>\n  </div>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"text\">\n    <i class=\"fas fa-file-alt\"></i><span> Text File</span>\n  </div>\n</fieldset>\n<fieldset class=\"mb1\">\n  <legend>ACTION</legend>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"merge\">\n    <i class=\"fas fa-network-wired\"></i><span> Merge</span>\n  </div>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"sort\">\n    <i class=\"fas fa-sort\"></i><span> Sort</span>\n  </div>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"projection\">\n    <i class=\"fas fa-sort\"></i><span> Projection</span>\n  </div>\n</fieldset>\n<fieldset class=\"mb1\">\n  <legend>ANALYSIS</legend>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"decision_tree\">\n    <i class=\"fas fa-network-wired\"></i><span> Decision Tree</span>\n  </div>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"regression\">\n    <i class=\"fas fa-sort\"></i><span> Regression</span>\n  </div>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"correlation\">\n    <i class=\"fas fa-sort\"></i><span> Correlation</span>\n  </div>\n</fieldset>\n<fieldset class=\"mb1\">\n  <legend>TRANSFORMATION</legend>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"uppercase\">\n    <span>Uppercase <strong>[TEXT]</strong></span>\n  </div>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"lowercase\">\n    <span>Lowercase <strong>[text]</strong></span>\n  </div>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"encode\">\n    <span>Encode <strong>[Text]</strong></span>\n  </div>\n</fieldset>\n<fieldset class=\"mb1\">\n  <legend>OUTPUT</legend>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"spreadsheetOutput\">\n    <i class=\"fas fa-file-excel\"></i><span> SpreadSheet</span>\n  </div>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"databaseOutput\">\n    <i class=\"fas fa-server\"></i><span> Database</span>\n  </div>\n  <div class=\"drag-drawflow\" draggable=\"true\" (dragstart)=\"dragDropService.drag($event)\" data-node=\"textOutput\">\n    <i class=\"fas fa-file-alt\"></i><span> Text File</span>\n  </div>\n</fieldset>\n";
       /***/
     },
 
